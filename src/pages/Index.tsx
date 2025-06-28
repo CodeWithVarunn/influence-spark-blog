@@ -7,6 +7,7 @@ import { IdeaGeneration } from "@/components/IdeaGeneration";
 import { ContentCreation } from "@/components/ContentCreation";
 import { ContentManagement } from "@/components/ContentManagement";
 import { LinkedInScheduler } from "@/components/LinkedInScheduler";
+import Header from "@/components/Header";
 import { Lightbulb, FileText, CheckCircle, Calendar, Upload } from "lucide-react";
 
 const Index = () => {
@@ -14,11 +15,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <Header />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            LinkedIn Content Studio
+            Welcome to Your Content Studio
           </h1>
           <p className="text-xl text-gray-600">
             Transform your resources into engaging LinkedIn content
