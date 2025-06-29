@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from "lucide-react";
+import { Loader2, User, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, Users } from "lucide-react";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,12 +21,10 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get the intended destination from state, or default to home
   const from = location.state?.from?.pathname || '/';
 
   console.log('Auth component - user:', user?.email, 'from:', from);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       console.log('User already logged in, redirecting to:', from);
@@ -80,26 +78,34 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-100/50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/30 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Enhanced background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-cyan-400/5 to-blue-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl relative z-10">
-        <div className="p-8">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl relative z-10 overflow-hidden">
+        {/* Animated border effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-lg opacity-20 animate-pulse"></div>
+        
+        <div className="relative p-8">
           <div className="text-center mb-8">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl transform hover:scale-105 transition-transform">
-              <Sparkles className="w-10 h-10 text-white" />
+            <div className="mx-auto w-20 h-20 mb-6 flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
+              <img 
+                src="/lovable-uploads/2a70df12-ad0c-4e56-9c0d-b5974e5fd46e.png" 
+                alt="LinkedUp Logo" 
+                className="w-16 h-16 object-contain filter drop-shadow-2xl"
+              />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-indigo-600 dark:from-white dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-2">
               {isSignUp ? "Join LinkedUp Content" : "Welcome Back"}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
               {isSignUp 
-                ? "Your all-in-one platform for brilliant LinkedIn posts"
-                : "Sign in to continue creating amazing content"
+                ? "Transform your LinkedIn presence with AI-powered content"
+                : "Sign in to get started"
               }
             </p>
           </div>
@@ -108,7 +114,7 @@ const Auth = () => {
             {isSignUp && (
               <div className="space-y-2">
                 <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <User className="w-4 h-4 text-blue-600" />
                   Full Name
                 </label>
                 <Input
@@ -118,14 +124,14 @@ const Auth = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   required={isSignUp}
-                  className="transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl"
+                  className="transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl h-12 bg-white/80 dark:bg-gray-800/80"
                 />
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
+                <Mail className="w-4 h-4 text-blue-600" />
                 Email Address
               </label>
               <Input
@@ -135,13 +141,13 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl"
+                className="transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl h-12 bg-white/80 dark:bg-gray-800/80"
               />
             </div>
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <Lock className="w-4 h-4" />
+                <Lock className="w-4 h-4 text-blue-600" />
                 Password
               </label>
               <div className="relative">
@@ -153,12 +159,12 @@ const Auth = () => {
                   placeholder="Enter your password"
                   required
                   minLength={8}
-                  className="pr-10 transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl"
+                  className="pr-12 transition-all focus:ring-2 focus:ring-blue-500 border-gray-200 dark:border-gray-700 rounded-xl h-12 bg-white/80 dark:bg-gray-800/80"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -177,21 +183,41 @@ const Auth = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-xl font-medium transition-all transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 h-12 rounded-xl font-medium transition-all transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   {isSignUp ? "Creating Account..." : "Signing In..."}
                 </>
               ) : (
                 <>
                   {isSignUp ? "Create Account" : "Sign In"}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
             </Button>
           </form>
+
+          {/* Features highlight for signup */}
+          {isSignUp && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="flex flex-col items-center">
+                  <Shield className="w-5 h-5 text-blue-600 mb-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Secure</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Zap className="w-5 h-5 text-green-600 mb-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Users className="w-5 h-5 text-purple-600 mb-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Professional</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -199,7 +225,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="ml-2 font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                className="ml-2 font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
               >
                 {isSignUp ? "Sign In" : "Create Account"}
               </button>
