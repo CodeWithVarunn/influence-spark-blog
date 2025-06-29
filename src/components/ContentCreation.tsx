@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Wand2, Save, Eye, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ContentDraft {
   id: string;
@@ -24,9 +24,7 @@ export const ContentCreation = () => {
   const [customPrompt, setCustomPrompt] = useState('');
   const [contentDrafts, setContentDrafts] = useState<ContentDraft[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [apiKey, setApiKey] = useState('');
 
-  // Sample ideas that would come from the previous step
   const availableIdeas = [
     'The Future of Remote Work: 5 Trends Every Leader Should Know',
     'Building Personal Brand Authority in Your Industry',
@@ -39,15 +37,6 @@ export const ContentCreation = () => {
       toast({
         title: "Missing information",
         description: "Please select an idea or enter a custom prompt",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your ChatGPT API key to generate content",
         variant: "destructive",
       });
       return;
@@ -68,68 +57,45 @@ export const ContentCreation = () => {
     setContentDrafts(prev => [...prev, newDraft]);
 
     try {
-      // Simulate ChatGPT API call
-      setTimeout(() => {
-        const sampleContent = `# ${title}
+      const prompt = selectedIdea || customPrompt;
+      
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          prompt: prompt,
+          type: 'content'
+        }
+      });
 
-In today's rapidly evolving business landscape, professionals are constantly seeking ways to stay ahead of the curve and drive meaningful impact in their organizations.
+      if (error) throw error;
 
-## Key Insights
+      const generatedContent = data.content;
+      const wordCount = generatedContent.split(' ').length;
 
-The modern workplace has undergone significant transformation, particularly in how we approach collaboration, innovation, and leadership. Here are the most important considerations:
+      setContentDrafts(prev => 
+        prev.map(draft => 
+          draft.id === newDraft.id 
+            ? { 
+                ...draft, 
+                content: generatedContent,
+                status: 'ready' as const,
+                wordCount: wordCount,
+                estimatedReadTime: `${Math.ceil(wordCount / 200)} min`
+              }
+            : draft
+        )
+      );
 
-### 1. Embracing Change as a Constant
-Change is no longer an exception—it's the rule. Successful professionals understand that adaptability isn't just a skill; it's a survival mechanism in today's dynamic environment.
-
-### 2. The Power of Continuous Learning
-The half-life of skills is rapidly decreasing. What you learned five years ago might be obsolete today. Investing in continuous learning and upskilling is crucial for career longevity.
-
-### 3. Building Authentic Relationships
-In an increasingly digital world, authentic human connections become more valuable than ever. Building genuine relationships with colleagues, clients, and industry peers creates lasting professional value.
-
-## Practical Applications
-
-Here's how you can implement these insights in your daily work:
-
-- **Set aside dedicated time for learning**: Block 30 minutes daily for skill development
-- **Seek feedback regularly**: Don't wait for annual reviews to understand your performance
-- **Network with purpose**: Focus on building meaningful connections rather than collecting contacts
-- **Document your wins**: Keep track of your achievements and learnings for future reference
-
-## Looking Forward
-
-The future belongs to those who can adapt quickly, learn continuously, and build meaningful relationships. By focusing on these fundamental areas, professionals can position themselves for long-term success regardless of industry changes.
-
-What strategies have you found most effective in your professional journey? Share your thoughts in the comments below.
-
-#ProfessionalDevelopment #Leadership #CareerGrowth #BusinessStrategy`;
-
-        setContentDrafts(prev => 
-          prev.map(draft => 
-            draft.id === newDraft.id 
-              ? { 
-                  ...draft, 
-                  content: sampleContent,
-                  status: 'ready' as const,
-                  wordCount: sampleContent.split(' ').length,
-                  estimatedReadTime: `${Math.ceil(sampleContent.split(' ').length / 200)} min`
-                }
-              : draft
-          )
-        );
-
-        setIsGenerating(false);
-        toast({
-          title: "Content generated successfully!",
-          description: "Your blog post is ready for review and approval",
-        });
-      }, 4000);
-
+      setIsGenerating(false);
+      toast({
+        title: "Content generated successfully!",
+        description: "Your blog post is ready for review and approval",
+      });
     } catch (error) {
+      console.error('Error generating content:', error);
       setIsGenerating(false);
       toast({
         title: "Generation failed",
-        description: "Please check your API key and try again",
+        description: "Please try again later",
         variant: "destructive",
       });
     }
@@ -160,41 +126,25 @@ What strategies have you found most effective in your professional journey? Shar
   return (
     <div className="space-y-6">
       {/* Content Generation Controls */}
-      <Card className="border-0 shadow-md bg-gradient-to-r from-orange-50 to-red-50">
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
             <Wand2 className="w-5 h-5 text-orange-600" />
             AI Content Generator
           </CardTitle>
-          <CardDescription>
-            Create complete blog content using ChatGPT
+          <CardDescription className="text-gray-600 dark:text-gray-300">
+            Create complete blog content using AI (No API key required!)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* API Key Input */}
-          <div>
-            <Label htmlFor="api-key">ChatGPT API Key</Label>
-            <Input
-              id="api-key"
-              type="password"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="mt-1"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Your API key is stored locally and never shared
-            </p>
-          </div>
-
           {/* Idea Selection */}
           <div>
-            <Label htmlFor="idea-select">Select Generated Idea</Label>
+            <Label htmlFor="idea-select">Select Ideas</Label>
             <select
               id="idea-select"
               value={selectedIdea}
               onChange={(e) => setSelectedIdea(e.target.value)}
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">Choose an idea...</option>
               {availableIdeas.map(idea => (
@@ -218,8 +168,8 @@ What strategies have you found most effective in your professional journey? Shar
 
           <Button 
             onClick={generateContent}
-            disabled={isGenerating || (!selectedIdea && !customPrompt) || !apiKey}
-            className="w-full bg-orange-600 hover:bg-orange-700"
+            disabled={isGenerating || (!selectedIdea && !customPrompt)}
+            className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg"
           >
             {isGenerating ? (
               <>
@@ -239,13 +189,13 @@ What strategies have you found most effective in your professional journey? Shar
       {/* Generated Content Drafts */}
       {contentDrafts.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Generated Content</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Generated Content</h3>
           
           {contentDrafts.map((draft) => (
-            <Card key={draft.id} className="border-0 shadow-md">
+            <Card key={draft.id} className="border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{draft.title}</CardTitle>
+                  <CardTitle className="text-lg text-gray-900 dark:text-white">{draft.title}</CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge 
                       variant={draft.status === 'ready' ? 'default' : 'secondary'}
@@ -254,7 +204,7 @@ What strategies have you found most effective in your professional journey? Shar
                       {draft.status}
                     </Badge>
                     {draft.status === 'ready' && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {draft.wordCount} words • {draft.estimatedReadTime} read
                       </div>
                     )}
@@ -266,7 +216,7 @@ What strategies have you found most effective in your professional journey? Shar
                 <CardContent>
                   <div className="flex items-center justify-center py-8">
                     <RefreshCw className="w-6 h-6 animate-spin text-orange-600 mr-2" />
-                    <span className="text-gray-600">Generating content with ChatGPT...</span>
+                    <span className="text-gray-600 dark:text-gray-300">Generating content with AI...</span>
                   </div>
                 </CardContent>
               )}
@@ -283,12 +233,12 @@ What strategies have you found most effective in your professional journey? Shar
                   <div className="flex gap-2">
                     <Button 
                       onClick={() => saveContent(draft.id)}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       Save for Approval
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" className="border-gray-300 dark:border-gray-600">
                       <Eye className="w-4 h-4 mr-2" />
                       Preview
                     </Button>
@@ -301,14 +251,14 @@ What strategies have you found most effective in your professional journey? Shar
       )}
 
       {contentDrafts.length === 0 && (
-        <Card className="border-0 shadow-md">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
           <CardContent className="text-center py-12">
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No content generated yet
             </h3>
-            <p className="text-gray-600 mb-4">
-              Enter your ChatGPT API key and generate content from your blog ideas
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Select an idea or enter a custom prompt to generate AI-powered content
             </p>
           </CardContent>
         </Card>

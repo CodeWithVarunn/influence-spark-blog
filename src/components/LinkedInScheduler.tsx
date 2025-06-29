@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, BarChart3 } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, BarChart3, User } from 'lucide-react';
 
 interface ScheduledPost {
   id: string;
@@ -27,6 +27,8 @@ export const LinkedInScheduler = () => {
   const [linkedInConnected, setLinkedInConnected] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState('09:00');
+  const [linkedInProfile, setLinkedInProfile] = useState('');
+  const [showProfileInput, setShowProfileInput] = useState(false);
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([
     {
       id: '1',
@@ -48,7 +50,6 @@ export const LinkedInScheduler = () => {
     }
   ]);
 
-  // Sample approved content that would come from content management
   const approvedContent = [
     {
       id: '1',
@@ -65,12 +66,17 @@ export const LinkedInScheduler = () => {
   ];
 
   const connectLinkedIn = () => {
-    // Simulate LinkedIn OAuth connection
+    if (!linkedInProfile.trim()) {
+      setShowProfileInput(true);
+      return;
+    }
+
     setTimeout(() => {
       setLinkedInConnected(true);
+      setShowProfileInput(false);
       toast({
         title: "LinkedIn connected successfully!",
-        description: "You can now schedule posts to your LinkedIn profile",
+        description: `Connected to ${linkedInProfile}. You can now schedule posts to your LinkedIn profile`,
       });
     }, 1000);
   };
@@ -109,41 +115,58 @@ export const LinkedInScheduler = () => {
 
   const getStatusColor = (status: ScheduledPost['status']) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'posted': return 'bg-green-100 text-green-800 border-green-200';
-      case 'failed': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'scheduled': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'posted': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400';
+      case 'failed': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* LinkedIn Connection */}
       {!linkedInConnected ? (
-        <Card className="border-0 shadow-md bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <Settings className="w-5 h-5 text-blue-600" />
               Connect LinkedIn Account
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-600 dark:text-gray-300">
               Connect your LinkedIn account to start scheduling posts
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-xl">in</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">LinkedIn Integration</h3>
-              <p className="text-gray-600 mb-4">
-                Securely connect your LinkedIn account to automate post scheduling
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">LinkedIn Integration</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Connect your LinkedIn account to automate post scheduling
               </p>
+              
+              {showProfileInput && (
+                <div className="mb-4 max-w-md mx-auto">
+                  <Label htmlFor="linkedin-profile" className="text-left block mb-2">LinkedIn Profile/Email</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="linkedin-profile"
+                      type="text"
+                      placeholder="your-email@example.com or profile-url"
+                      value={linkedInProfile}
+                      onChange={(e) => setLinkedInProfile(e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <Button 
                 onClick={connectLinkedIn}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
               >
-                Connect LinkedIn Account
+                <User className="w-4 h-4 mr-2" />
+                {showProfileInput ? 'Connect Account' : 'Connect LinkedIn Account'}
               </Button>
             </div>
           </CardContent>
@@ -152,36 +175,35 @@ export const LinkedInScheduler = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Scheduling Interface */}
           <div className="space-y-4">
-            <Card className="border-0 shadow-md">
+            <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <CalendarIcon className="w-5 h-5 text-green-600" />
                   Schedule New Post
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Select approved content and set publishing schedule
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Content Selection */}
                 <div>
                   <Label>Select Approved Content</Label>
                   <div className="space-y-2 mt-2">
                     {approvedContent.map(content => (
                       <div
                         key={content.id}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <div>
-                          <h4 className="font-medium text-sm">{content.title}</h4>
-                          <p className="text-xs text-gray-500">
+                          <h4 className="font-medium text-sm text-gray-900 dark:text-white">{content.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {content.wordCount} words • {content.estimatedReadTime} read
                           </p>
                         </div>
                         <Button
                           size="sm"
                           onClick={() => schedulePost(content.id)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                         >
                           <Clock className="w-4 h-4 mr-2" />
                           Schedule
@@ -191,7 +213,6 @@ export const LinkedInScheduler = () => {
                   </div>
                 </div>
 
-                {/* Date and Time Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="schedule-time">Time</Label>
@@ -207,10 +228,9 @@ export const LinkedInScheduler = () => {
               </CardContent>
             </Card>
 
-            {/* Calendar */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardHeader>
-                <CardTitle>Select Date</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-white">Select Date</CardTitle>
               </CardHeader>
               <CardContent>
                 <Calendar
@@ -218,20 +238,20 @@ export const LinkedInScheduler = () => {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={(date) => date < new Date()}
-                  className="rounded-md border"
+                  className="rounded-md border dark:border-gray-600"
                 />
               </CardContent>
             </Card>
           </div>
 
           {/* Scheduled Posts */}
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                 <Send className="w-5 h-5 text-purple-600" />
                 Scheduled Posts
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-600 dark:text-gray-300">
                 Manage your upcoming and past LinkedIn posts
               </CardDescription>
             </CardHeader>
@@ -240,12 +260,12 @@ export const LinkedInScheduler = () => {
                 {scheduledPosts.map((post) => (
                   <div
                     key={post.id}
-                    className="border border-gray-200 rounded-lg p-4"
+                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm mb-1">{post.title}</h4>
-                        <p className="text-xs text-gray-500">
+                        <h4 className="font-medium text-sm mb-1 text-gray-900 dark:text-white">{post.title}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {post.scheduledDate.toLocaleDateString()} at{' '}
                           {post.scheduledDate.toLocaleTimeString([], { 
                             hour: '2-digit', 
@@ -259,10 +279,10 @@ export const LinkedInScheduler = () => {
                     </div>
 
                     {post.engagementStats && (
-                      <div className="bg-gray-50 rounded-md p-3">
+                      <div className="bg-white dark:bg-gray-800 rounded-md p-3">
                         <div className="flex items-center gap-1 mb-2">
-                          <BarChart3 className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-700">
+                          <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Engagement Stats
                           </span>
                         </div>
@@ -271,32 +291,32 @@ export const LinkedInScheduler = () => {
                             <div className="text-lg font-semibold text-blue-600">
                               {post.engagementStats.views}
                             </div>
-                            <div className="text-xs text-gray-500">Views</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Views</div>
                           </div>
                           <div>
                             <div className="text-lg font-semibold text-red-600">
                               {post.engagementStats.likes}
                             </div>
-                            <div className="text-xs text-gray-500">Likes</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Likes</div>
                           </div>
                           <div>
                             <div className="text-lg font-semibold text-green-600">
                               {post.engagementStats.comments}
                             </div>
-                            <div className="text-xs text-gray-500">Comments</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Comments</div>
                           </div>
                           <div>
                             <div className="text-lg font-semibold text-purple-600">
                               {post.engagementStats.shares}
                             </div>
-                            <div className="text-xs text-gray-500">Shares</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Shares</div>
                           </div>
                         </div>
                       </div>
                     )}
 
                     {post.status === 'posted' && (
-                      <div className="flex items-center gap-2 mt-2 text-green-600">
+                      <div className="flex items-center gap-2 mt-2 text-green-600 dark:text-green-400">
                         <CheckCircle2 className="w-4 h-4" />
                         <span className="text-sm">Successfully posted to LinkedIn</span>
                       </div>
