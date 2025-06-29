@@ -17,15 +17,19 @@ serve(async (req) => {
   try {
     const { prompt, type = 'ideas' } = await req.json();
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     let systemPrompt = '';
     let userPrompt = '';
 
     if (type === 'ideas') {
       systemPrompt = 'You are a professional blog idea generator. Generate engaging, SEO-friendly blog post ideas based on the given topic or resources.';
-      userPrompt = `Generate 20 creative and engaging blog post ideas for: ${prompt}. Return them as a JSON array with objects containing: title, description, category, and engagement_potential (high/medium/low).`;
+      userPrompt = `Generate 10 creative and engaging blog post ideas for: ${prompt}. Return them as a JSON array with objects containing: title, description, category, and engagement_potential (high/medium/low).`;
     } else if (type === 'content') {
       systemPrompt = 'You are a professional blog content writer. Create comprehensive, engaging blog posts with proper structure and formatting.';
-      userPrompt = `Write a complete blog post about: ${prompt}. Include proper headings, subheadings, and engaging content that would work well on LinkedIn.`;
+      userPrompt = `Write a complete blog post about: ${prompt}. Include proper headings, subheadings, and engaging content that would work well on LinkedIn. Make it professional yet conversational.`;
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -41,10 +45,21 @@ serve(async (req) => {
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API');
+    }
+
     const generatedContent = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ content: generatedContent }), {
@@ -52,7 +67,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in generate-content function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'An unexpected error occurred',
+      details: 'Please check your OpenAI API key configuration and try again.'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

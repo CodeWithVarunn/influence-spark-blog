@@ -4,10 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Lightbulb, Sparkles, RefreshCw, CheckCircle2, Plus } from 'lucide-react';
+import { Lightbulb, Sparkles, RefreshCw, CheckCircle2, Plus, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BlogIdea {
@@ -75,6 +74,22 @@ export const IdeaGeneration = () => {
             title: 'Data-Driven Decision Making: Tools and Techniques',
             description: 'How to leverage data analytics to make better business decisions and drive growth.',
             category: 'Business Strategy',
+            engagement_potential: 'medium',
+            selected: false
+          },
+          {
+            id: '4',
+            title: '10 Networking Strategies That Actually Work',
+            description: 'Proven methods to build meaningful professional relationships and expand your network.',
+            category: 'Networking',
+            engagement_potential: 'high',
+            selected: false
+          },
+          {
+            id: '5',
+            title: 'The Art of Giving Constructive Feedback',
+            description: 'Learn how to deliver feedback that motivates and improves team performance.',
+            category: 'Management',
             engagement_potential: 'medium',
             selected: false
           }
@@ -151,13 +166,15 @@ export const IdeaGeneration = () => {
   return (
     <div className="space-y-6">
       {/* Generation Controls */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-purple-900/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+          <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white text-xl">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
             AI Blog Idea Generator
           </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-300">
+          <CardDescription className="text-gray-600 dark:text-gray-300 text-base">
             Generate engaging blog ideas from your uploaded resources
           </CardDescription>
         </CardHeader>
@@ -166,7 +183,7 @@ export const IdeaGeneration = () => {
             <Button 
               onClick={generateIdeas}
               disabled={isGenerating}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 px-6 py-3"
             >
               {isGenerating ? (
                 <>
@@ -184,14 +201,15 @@ export const IdeaGeneration = () => {
             <Button
               variant="outline"
               onClick={() => setShowCustomInput(!showCustomInput)}
-              className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-900/20"
+              className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-900/20 px-6 py-3 hover:shadow-lg transition-all"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Custom Idea
             </Button>
             
             {ideas.length > 0 && (
-              <div className="text-sm text-gray-600 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 px-3 py-1 rounded-full">
+              <div className="text-sm text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70 px-4 py-2 rounded-full backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+                <Sparkles className="w-4 h-4 inline mr-1" />
                 {selectedCount} of {ideas.length} ideas selected
               </div>
             )}
@@ -199,17 +217,21 @@ export const IdeaGeneration = () => {
 
           {/* Custom Idea Input */}
           {showCustomInput && (
-            <div className="mt-4 p-4 bg-white/70 dark:bg-gray-800/70 rounded-lg space-y-3">
-              <Label htmlFor="custom-idea">Enter Your Custom Idea</Label>
-              <div className="flex gap-2">
+            <div className="mt-6 p-6 bg-white/70 dark:bg-gray-800/70 rounded-2xl backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 space-y-4">
+              <Label htmlFor="custom-idea" className="text-base font-medium">Enter Your Custom Idea</Label>
+              <div className="flex gap-3">
                 <Input
                   id="custom-idea"
                   value={customIdea}
                   onChange={(e) => setCustomIdea(e.target.value)}
                   placeholder="Enter your blog idea..."
-                  className="flex-1"
+                  className="flex-1 rounded-xl"
                 />
-                <Button onClick={addCustomIdea} disabled={!customIdea.trim()}>
+                <Button 
+                  onClick={addCustomIdea} 
+                  disabled={!customIdea.trim()}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 rounded-xl"
+                >
                   Add
                 </Button>
               </div>
@@ -220,13 +242,13 @@ export const IdeaGeneration = () => {
 
       {/* Generated Ideas */}
       {ideas.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Select Ideas</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Select Ideas</h3>
             <Button 
               onClick={proceedToContentCreation}
               disabled={selectedCount === 0}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg"
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 px-6"
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
               Proceed with Selected ({selectedCount})
@@ -237,34 +259,34 @@ export const IdeaGeneration = () => {
             {ideas.map((idea) => (
               <Card 
                 key={idea.id} 
-                className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-lg ${
+                className={`cursor-pointer transition-all duration-300 border-2 hover:shadow-xl ${
                   idea.selected 
-                    ? 'border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 shadow-md transform scale-[1.02]' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
-                }`}
+                    ? 'border-blue-400 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-lg transform scale-[1.02]' 
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80 hover:shadow-lg'
+                } backdrop-blur-sm`}
                 onClick={() => toggleIdeaSelection(idea.id)}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h4 className="font-bold text-lg text-gray-900 dark:text-white">
                           {idea.title}
                         </h4>
                         {idea.selected && (
-                          <CheckCircle2 className="w-5 h-5 text-blue-600 animate-in fade-in-0 zoom-in-95" />
+                          <CheckCircle2 className="w-6 h-6 text-blue-600 animate-in fade-in-0 zoom-in-95" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                      <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                         {idea.description}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="secondary" className="text-sm bg-gray-100 dark:bg-gray-700 px-3 py-1">
                           {idea.category}
                         </Badge>
                         <Badge 
                           variant={idea.engagement_potential === 'high' ? 'default' : 'outline'}
-                          className={`text-xs ${
+                          className={`text-sm px-3 py-1 ${
                             idea.engagement_potential === 'high' 
                               ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400' 
                               : idea.engagement_potential === 'medium'
@@ -285,13 +307,15 @@ export const IdeaGeneration = () => {
       )}
 
       {ideas.length === 0 && (
-        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
-          <CardContent className="text-center py-12">
-            <Lightbulb className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <CardContent className="text-center py-16">
+            <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Lightbulb className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
               No ideas generated yet
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 text-lg mb-6 max-w-md mx-auto">
               Click "Generate Blog Ideas" to get AI-powered suggestions for your content
             </p>
           </CardContent>
