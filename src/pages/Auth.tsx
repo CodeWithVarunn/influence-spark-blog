@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,14 +19,20 @@ const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from state, or default to home
+  const from = location.state?.from?.pathname || '/';
+
+  console.log('Auth component - user:', user?.email, 'from:', from);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to home');
-      navigate('/', { replace: true });
+      console.log('User already logged in, redirecting to:', from);
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +45,9 @@ const Auth = () => {
         if (!result.error) {
           toast({
             title: "Account Created Successfully!",
-            description: "Welcome to LinkedUp Content! Redirecting you to the dashboard...",
+            description: "Welcome to LinkedUp Content! You can now access your dashboard.",
             duration: 3000,
           });
-          // Small delay to show the success message
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 1500);
         }
       } else {
         result = await signIn(email, password);
@@ -55,10 +57,6 @@ const Auth = () => {
             description: "Successfully signed in. Redirecting to dashboard...",
             duration: 3000,
           });
-          // Small delay to show the success message
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 1500);
         }
       }
       
@@ -70,6 +68,7 @@ const Auth = () => {
         });
       }
     } catch (error) {
+      console.error('Auth error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
