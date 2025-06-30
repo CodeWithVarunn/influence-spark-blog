@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
 import { Header } from '@/components/Header';
-import { ResourceUpload } from '@/components/ResourceUpload';
+import { Footer } from '@/components/Footer';
+import { UserProfile } from '@/components/UserProfile';
 import { IdeaGeneration } from '@/components/IdeaGeneration';
 import { ContentCreation } from '@/components/ContentCreation';
 import { LinkedInScheduler } from '@/components/LinkedInScheduler';
+import { Settings } from '@/components/Settings';
 import { FloatingNav } from '@/components/FloatingNav';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Lightbulb, FileText, Calendar, Zap, Users, TrendingUp, Brain, Rocket, Target, BarChart3 } from 'lucide-react';
+import { Upload, Lightbulb, FileText, Calendar, Settings as SettingsIcon, Users, TrendingUp, Brain, Rocket, Target, BarChart3, Sparkles, Zap, Award } from 'lucide-react';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('profile');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/30 transition-all duration-300">
@@ -43,11 +45,11 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Enhanced Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
+          {/* Enhanced Stats Section with 4 items */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl h-full">
                 <Brain className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">AI-Powered</p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">Advanced content generation with GPT technology</p>
@@ -56,7 +58,7 @@ const Index = () => {
             
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl h-full">
                 <Rocket className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Lightning Fast</p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">Generate professional content in seconds</p>
@@ -65,24 +67,33 @@ const Index = () => {
             
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl h-full">
                 <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">High Engagement</p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">Optimize posts for maximum reach and impact</p>
+              </div>
+            </div>
+
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-red-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl h-full">
+                <Award className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Professional</p>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">Tailored for business professionals and creators</p>
               </div>
             </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 dark:bg-gray-800/80 shadow-2xl rounded-3xl p-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 dark:bg-gray-800/80 shadow-2xl rounded-3xl p-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
             <TabsTrigger 
-              value="upload" 
+              value="profile" 
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
             >
-              <Upload className="w-5 h-5" />
-              <span className="hidden sm:inline">Upload Resources</span>
-              <span className="sm:hidden">Upload</span>
+              <Users className="w-5 h-5" />
+              <span className="hidden sm:inline">Profile Setup</span>
+              <span className="sm:hidden">Profile</span>
             </TabsTrigger>
             <TabsTrigger 
               value="ideas" 
@@ -108,25 +119,33 @@ const Index = () => {
               <span className="hidden sm:inline">Schedule Posts</span>
               <span className="sm:hidden">Schedule</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-gray-700 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
+            >
+              <SettingsIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Settings</span>
+              <span className="sm:hidden">Settings</span>
+            </TabsTrigger>
           </TabsList>
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5 rounded-3xl blur-3xl"></div>
             <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-200/50 dark:border-gray-700/50">
-              <TabsContent value="upload" className="mt-0">
+              <TabsContent value="profile" className="mt-0">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Upload className="w-6 h-6 text-white" />
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upload Resources</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Transform your documents into content gold</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Setup Your Profile</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">Tell us about yourself for personalized content</p>
                   </div>
                   <div className="ml-auto">
-                    <Zap className="w-8 h-8 text-yellow-500 animate-pulse" />
+                    <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />
                   </div>
                 </div>
-                <ResourceUpload />
+                <UserProfile />
               </TabsContent>
 
               <TabsContent value="ideas" className="mt-0">
@@ -176,12 +195,30 @@ const Index = () => {
                 </div>
                 <LinkedInScheduler />
               </TabsContent>
+
+              <TabsContent value="settings" className="mt-0">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-gradient-to-r from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <SettingsIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">Customize your experience</p>
+                  </div>
+                  <div className="ml-auto">
+                    <Zap className="w-8 h-8 text-gray-500 animate-pulse" />
+                  </div>
+                </div>
+                <Settings />
+              </TabsContent>
             </div>
           </div>
         </Tabs>
 
         <FloatingNav activeTab={activeTab} onTabChange={setActiveTab} />
       </main>
+
+      <Footer />
     </div>
   );
 };

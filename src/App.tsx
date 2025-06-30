@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { ChatBot } from "@/components/ChatBot";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import SchedulePosts from "./pages/SchedulePosts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Index />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/schedule" 
+                element={
+                  <ProtectedRoute>
+                    <SchedulePosts />
                   </ProtectedRoute>
                 } 
               />

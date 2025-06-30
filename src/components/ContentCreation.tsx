@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Sparkles, Copy, Download, Share2, RefreshCw, Lightbulb } from 'lucide-react';
+import { FileText, Sparkles, Copy, Share2, RefreshCw, Lightbulb, Link, Upload, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const ContentCreation = () => {
@@ -13,6 +15,8 @@ export const ContentCreation = () => {
   const [customPrompt, setCustomPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState('');
+  const [showDocumentInput, setShowDocumentInput] = useState(false);
 
   const generateContent = async () => {
     if (!customPrompt.trim()) {
@@ -27,9 +31,23 @@ export const ContentCreation = () => {
     setIsGenerating(true);
     
     try {
+      let enhancedPrompt = customPrompt;
+      
+      // If user provided a document URL, include it in the prompt
+      if (documentUrl.trim()) {
+        enhancedPrompt = `Based on the document/link: ${documentUrl} and the following request: ${customPrompt}`;
+      }
+
+      // Get user profile data for personalization
+      const userProfile = localStorage.getItem('userProfile');
+      if (userProfile) {
+        const profile = JSON.parse(userProfile);
+        enhancedPrompt += `\n\nUser context: ${profile.jobTitle} at ${profile.company}, industry: ${profile.industry}, interests: ${profile.interests?.join(', ')}, goals: ${profile.goals}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
-          prompt: customPrompt,
+          prompt: enhancedPrompt,
           type: 'content'
         }
       });
@@ -87,22 +105,54 @@ export const ContentCreation = () => {
             AI Content Generator
           </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-300">
-            Create complete blog content using AI
+            Create complete LinkedIn content using AI
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <label htmlFor="prompt" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Lightbulb className="w-4 h-4" />
-              Get Content Ideas
+              Content Ideas
             </label>
             <Textarea
               id="prompt"
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="Enter your content idea or topic (e.g., 'Write about leadership in remote teams')"
+              placeholder="Enter your content idea or topic (e.g., 'Write about leadership in remote teams'). You can also paste links to articles or documents for reference."
               className="min-h-[100px] resize-none"
             />
+          </div>
+
+          {/* Document/Link Input */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Link className="w-4 h-4" />
+                Reference Document/Link (Optional)
+              </Label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDocumentInput(!showDocumentInput)}
+                className="text-xs"
+              >
+                {showDocumentInput ? 'Hide' : 'Add Document'}
+              </Button>
+            </div>
+            
+            {showDocumentInput && (
+              <div className="p-4 bg-white/70 dark:bg-gray-800/70 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                <Input
+                  value={documentUrl}
+                  onChange={(e) => setDocumentUrl(e.target.value)}
+                  placeholder="Paste a link to an article, document, or any URL you want to reference..."
+                  className="mb-2"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  The AI will read and analyze the content from this link to create personalized content for you.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">

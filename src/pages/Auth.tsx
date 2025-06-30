@@ -4,9 +4,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, Users } from "lucide-react";
+import { Loader2, User, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, Users, Sparkles, Brain, Rocket } from "lucide-react";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -15,6 +16,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
@@ -23,11 +25,8 @@ const Auth = () => {
 
   const from = location.state?.from?.pathname || '/';
 
-  console.log('Auth component - user:', user?.email, 'from:', from);
-
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to:', from);
       navigate(from, { replace: true });
     }
   }, [user, navigate, from]);
@@ -42,14 +41,17 @@ const Auth = () => {
         result = await signUp(email, password, fullName);
         if (!result.error) {
           toast({
-            title: "Account Created Successfully!",
-            description: "Welcome to LinkedUp Content! You can now access your dashboard.",
+            title: "Welcome to LinkedUp Content!",
+            description: "Your account has been created successfully. You can now access your dashboard.",
             duration: 3000,
           });
         }
       } else {
         result = await signIn(email, password);
         if (!result.error) {
+          if (rememberMe) {
+            localStorage.setItem('rememberMe', 'true');
+          }
           toast({
             title: "Welcome Back!",
             description: "Successfully signed in. Redirecting to dashboard...",
@@ -86,7 +88,7 @@ const Auth = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-cyan-400/5 to-blue-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl relative z-10 overflow-hidden">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl relative z-10 overflow-hidden">
         {/* Animated border effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-lg opacity-20 animate-pulse"></div>
         
@@ -180,6 +182,22 @@ const Auth = () => {
               )}
             </div>
 
+            {!isSignUp && (
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <label
+                  htmlFor="remember"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 dark:text-gray-300"
+                >
+                  Remember me
+                </label>
+              </div>
+            )}
+
             <Button
               type="submit"
               disabled={loading}
@@ -204,16 +222,16 @@ const Auth = () => {
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="flex flex-col items-center">
-                  <Shield className="w-5 h-5 text-blue-600 mb-1" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Secure</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <Zap className="w-5 h-5 text-green-600 mb-1" />
+                  <Brain className="w-5 h-5 text-blue-600 mb-1" />
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <Users className="w-5 h-5 text-purple-600 mb-1" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Professional</span>
+                  <Rocket className="w-5 h-5 text-green-600 mb-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Lightning Fast</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <Sparkles className="w-5 h-5 text-purple-600 mb-1" />
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Engaging</span>
                 </div>
               </div>
             </div>

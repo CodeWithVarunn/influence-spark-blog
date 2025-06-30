@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Lightbulb, FileText, Calendar, Zap, Target, Rocket } from 'lucide-react';
+import { Users, Lightbulb, FileText, Calendar, Settings } from 'lucide-react';
 
 interface FloatingNavProps {
   activeTab: string;
@@ -22,10 +22,11 @@ export const FloatingNav = ({ activeTab, onTabChange }: FloatingNavProps) => {
   }, []);
 
   const navItems = [
-    { id: 'upload', icon: Upload, label: 'Upload', color: 'from-blue-500 to-indigo-500' },
+    { id: 'profile', icon: Users, label: 'Profile', color: 'from-blue-500 to-indigo-500' },
     { id: 'ideas', icon: Lightbulb, label: 'Ideas', color: 'from-purple-500 to-pink-500' },
     { id: 'content', icon: FileText, label: 'Create', color: 'from-orange-500 to-red-500' },
     { id: 'schedule', icon: Calendar, label: 'Schedule', color: 'from-green-500 to-emerald-500' },
+    { id: 'settings', icon: Settings, label: 'Settings', color: 'from-gray-500 to-gray-700' },
   ];
 
   if (!isVisible) return null;
@@ -58,16 +59,6 @@ export const FloatingNav = ({ activeTab, onTabChange }: FloatingNavProps) => {
               </Button>
             );
           })}
-        </div>
-        
-        {/* Quick action button */}
-        <div className="absolute -top-4 right-4">
-          <Button
-            size="sm"
-            className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-lg animate-pulse"
-          >
-            <Zap className="w-4 h-4 text-white" />
-          </Button>
         </div>
       </div>
     </div>

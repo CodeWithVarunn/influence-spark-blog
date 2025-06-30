@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, BarChart3, User } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, BarChart3, User, Eye } from 'lucide-react';
 
 interface ScheduledPost {
   id: string;
   title: string;
+  content: string;
   scheduledDate: Date;
   status: 'scheduled' | 'posted' | 'failed';
   engagementStats?: {
@@ -24,15 +27,20 @@ interface ScheduledPost {
 
 export const LinkedInScheduler = () => {
   const { toast } = useToast();
-  const [linkedInConnected, setLinkedInConnected] = useState(false);
+  const [linkedInConnected, setLinkedInConnected] = useState(
+    localStorage.getItem('linkedinConnected') === 'true'
+  );
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState('09:00');
   const [linkedInProfile, setLinkedInProfile] = useState('');
   const [showProfileInput, setShowProfileInput] = useState(false);
+  const [previewContent, setPreviewContent] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([
     {
       id: '1',
       title: 'Building Personal Brand Authority in Your Industry',
+      content: 'Excited to share my thoughts on building a strong personal brand in today\'s competitive market. Here are 5 key strategies that have worked for me...',
       scheduledDate: new Date(2024, 0, 20, 9, 0),
       status: 'posted',
       engagementStats: {
@@ -45,6 +53,7 @@ export const LinkedInScheduler = () => {
     {
       id: '2',
       title: 'The Future of Remote Work: 5 Trends Every Leader Should Know',
+      content: 'Remote work is here to stay. As leaders, we need to adapt and evolve. Here are the top 5 trends I\'m seeing in remote work culture...',
       scheduledDate: new Date(2024, 0, 22, 14, 30),
       status: 'scheduled'
     }
@@ -54,12 +63,14 @@ export const LinkedInScheduler = () => {
     {
       id: '1',
       title: 'Data-Driven Decision Making: Tools and Techniques',
+      content: 'In today\'s business landscape, data-driven decision making isn\'t just an advantage—it\'s essential. Here\'s how to leverage analytics effectively...',
       wordCount: 1100,
       estimatedReadTime: '6 min'
     },
     {
       id: '2',
       title: 'Networking in the Digital Age: LinkedIn Best Practices',
+      content: 'Professional networking has evolved dramatically. Here are proven strategies to build meaningful connections on LinkedIn...',
       wordCount: 950,
       estimatedReadTime: '5 min'
     }
@@ -74,6 +85,8 @@ export const LinkedInScheduler = () => {
     setTimeout(() => {
       setLinkedInConnected(true);
       setShowProfileInput(false);
+      localStorage.setItem('linkedinConnected', 'true');
+      localStorage.setItem('linkedinProfile', linkedInProfile);
       toast({
         title: "LinkedIn connected successfully!",
         description: `Connected to ${linkedInProfile}. You can now schedule posts to your LinkedIn profile`,
@@ -81,7 +94,7 @@ export const LinkedInScheduler = () => {
     }, 1000);
   };
 
-  const schedulePost = (contentId: string) => {
+  const schedulePost = (content: any) => {
     if (!selectedDate || !selectedTime) {
       toast({
         title: "Missing information",
@@ -91,9 +104,6 @@ export const LinkedInScheduler = () => {
       return;
     }
 
-    const content = approvedContent.find(c => c.id === contentId);
-    if (!content) return;
-
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const scheduledDateTime = new Date(selectedDate);
     scheduledDateTime.setHours(hours, minutes);
@@ -101,6 +111,7 @@ export const LinkedInScheduler = () => {
     const newPost: ScheduledPost = {
       id: Date.now().toString(),
       title: content.title,
+      content: content.content,
       scheduledDate: scheduledDateTime,
       status: 'scheduled'
     };
@@ -120,6 +131,11 @@ export const LinkedInScheduler = () => {
       case 'failed': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400';
       default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300';
     }
+  };
+
+  const previewPost = (content: any) => {
+    setPreviewContent(content.content);
+    setShowPreview(true);
   };
 
   return (
@@ -187,27 +203,38 @@ export const LinkedInScheduler = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Select Approved Content</Label>
+                  <Label>Select Content to Schedule</Label>
                   <div className="space-y-2 mt-2">
                     {approvedContent.map(content => (
                       <div
                         key={content.id}
                         className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-medium text-sm text-gray-900 dark:text-white">{content.title}</h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
                             {content.wordCount} words • {content.estimatedReadTime} read
                           </p>
                         </div>
-                        <Button
-                          size="sm"
-                          onClick={() => schedulePost(content.id)}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                        >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Schedule
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => previewPost(content)}
+                            className="text-purple-600 hover:text-purple-700 border-purple-200 hover:bg-purple-50"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Preview
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => schedulePost(content)}
+                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                          >
+                            <Clock className="w-4 h-4 mr-2" />
+                            Schedule
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -328,6 +355,20 @@ export const LinkedInScheduler = () => {
           </Card>
         </div>
       )}
+
+      {/* Preview Dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Content Preview</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+              {previewContent}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -25,11 +25,31 @@ serve(async (req) => {
     let userPrompt = '';
 
     if (type === 'ideas') {
-      systemPrompt = 'You are a professional blog idea generator. Generate engaging, SEO-friendly blog post ideas based on the given topic or resources.';
-      userPrompt = `Generate 10 creative and engaging blog post ideas for: ${prompt}. Return them as a JSON array with objects containing: title, description, category, and engagement_potential (high/medium/low).`;
+      systemPrompt = 'You are a professional LinkedIn content strategist. Generate engaging, professional blog post ideas that would perform well on LinkedIn.';
+      userPrompt = `Generate 10 creative and engaging LinkedIn post ideas. Return them as a JSON array with objects containing: title, description, category, and engagement_potential (high/medium/low). Make them professional, actionable, and relevant to business professionals.
+
+Example format:
+[
+  {
+    "title": "5 Leadership Lessons I Learned from My Biggest Failure",
+    "description": "Share personal insights about leadership challenges and how failures can become valuable learning experiences",
+    "category": "Leadership",
+    "engagement_potential": "high"
+  }
+]`;
     } else if (type === 'content') {
-      systemPrompt = 'You are a professional blog content writer. Create comprehensive, engaging blog posts with proper structure and formatting.';
-      userPrompt = `Write a complete blog post about: ${prompt}. Include proper headings, subheadings, and engaging content that would work well on LinkedIn. Make it professional yet conversational.`;
+      systemPrompt = 'You are a professional LinkedIn content writer. Create comprehensive, engaging LinkedIn posts with proper structure and formatting that drive engagement.';
+      userPrompt = `Write a complete LinkedIn post about: ${prompt}. 
+
+Guidelines:
+- Make it professional yet conversational
+- Include a compelling hook in the first line
+- Use short paragraphs for readability
+- Add relevant emojis sparingly
+- Include a call-to-action at the end
+- Keep it between 150-300 words
+- Make it shareable and engaging
+- Focus on providing value to the reader`;
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -51,12 +71,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
       throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response:', data);
       throw new Error('Invalid response from OpenAI API');
     }
 
