@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Zap, Users, Sparkles, Brain, Rocket } from "lucide-react";
+import { Loader2, User, Mail, Lock, Eye, EyeOff, ArrowRight, Brain, Rocket, Sparkles } from "lucide-react";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -223,7 +223,7 @@ const Auth = () => {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="flex flex-col items-center">
                   <Brain className="w-5 h-5 text-blue-600 mb-1" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">AI-Enhanced</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <Rocket className="w-5 h-5 text-green-600 mb-1" />
@@ -231,7 +231,7 @@ const Auth = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <Sparkles className="w-5 h-5 text-purple-600 mb-1" />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Engaging</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Results-Driven</span>
                 </div>
               </div>
             </div>

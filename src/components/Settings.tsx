@@ -2,19 +2,15 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Settings as SettingsIcon, Key, Bell, Shield, Palette, User, Save, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Shield, Palette, Save, Trash2 } from 'lucide-react';
 
 export const Settings = () => {
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
   const [settings, setSettings] = useState({
-    openaiKey: '',
     linkedinStayConnected: true,
     notifications: {
       email: true,
@@ -41,16 +37,6 @@ export const Settings = () => {
     });
   };
 
-  const handleApiKeyUpdate = () => {
-    if (settings.openaiKey.trim()) {
-      localStorage.setItem('openaiKey', settings.openaiKey);
-      toast({
-        title: "API Key Updated!",
-        description: "Your OpenAI API key has been saved securely.",
-      });
-    }
-  };
-
   const handleDeleteAccount = () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       toast({
@@ -73,42 +59,22 @@ export const Settings = () => {
         </div>
       </div>
 
-      {/* API Configuration */}
+      {/* LinkedIn Connection */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Key className="w-5 h-5 text-blue-600" />
-            API Configuration
+            <Shield className="w-5 h-5 text-blue-600" />
+            LinkedIn Connection
           </CardTitle>
           <CardDescription>
-            Configure your API keys for enhanced functionality
+            Manage your LinkedIn connection settings
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="openai-key">OpenAI API Key</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="openai-key"
-                type="password"
-                value={settings.openaiKey}
-                onChange={(e) => setSettings(prev => ({ ...prev, openaiKey: e.target.value }))}
-                placeholder="sk-..."
-                className="flex-1"
-              />
-              <Button onClick={handleApiKeyUpdate} size="sm">
-                Update
-              </Button>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Your API key is stored securely and never shared
-            </p>
-          </div>
-          
+        <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <Label>Stay Connected to LinkedIn</Label>
-              <p className="text-sm text-gray-500">Keep your LinkedIn connection active</p>
+              <h3 className="font-medium">Stay Connected to LinkedIn</h3>
+              <p className="text-sm text-gray-500">Keep your LinkedIn connection active for seamless posting</p>
             </div>
             <Switch
               checked={settings.linkedinStayConnected}
@@ -134,7 +100,7 @@ export const Settings = () => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Email Notifications</Label>
+              <h3 className="font-medium">Email Notifications</h3>
               <p className="text-sm text-gray-500">Receive updates via email</p>
             </div>
             <Switch
@@ -150,7 +116,7 @@ export const Settings = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <Label>Content Ready Alerts</Label>
+              <h3 className="font-medium">Content Ready Alerts</h3>
               <p className="text-sm text-gray-500">Get notified when content is generated</p>
             </div>
             <Switch
@@ -166,7 +132,7 @@ export const Settings = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <Label>Scheduled Post Alerts</Label>
+              <h3 className="font-medium">Scheduled Post Alerts</h3>
               <p className="text-sm text-gray-500">Reminders for scheduled posts</p>
             </div>
             <Switch
@@ -196,7 +162,7 @@ export const Settings = () => {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <Label>Dark Mode</Label>
+              <h3 className="font-medium">Dark Mode</h3>
               <p className="text-sm text-gray-500">Toggle between light and dark themes</p>
             </div>
             <Switch
@@ -221,7 +187,7 @@ export const Settings = () => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Profile Visibility</Label>
+              <h3 className="font-medium">Profile Visibility</h3>
               <p className="text-sm text-gray-500">Make your profile visible to other users</p>
             </div>
             <Switch
@@ -237,7 +203,7 @@ export const Settings = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <Label>Auto-Save Drafts</Label>
+              <h3 className="font-medium">Auto-Save Drafts</h3>
               <p className="text-sm text-gray-500">Automatically save your work</p>
             </div>
             <Switch

@@ -1,18 +1,34 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { UserProfile } from '@/components/UserProfile';
-import { IdeaGeneration } from '@/components/IdeaGeneration';
 import { ContentCreation } from '@/components/ContentCreation';
 import { LinkedInScheduler } from '@/components/LinkedInScheduler';
-import { Settings } from '@/components/Settings';
 import { FloatingNav } from '@/components/FloatingNav';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Lightbulb, FileText, Calendar, Settings as SettingsIcon, Users, TrendingUp, Brain, Rocket, Target, BarChart3, Sparkles, Zap, Award } from 'lucide-react';
+import { Users, FileText, Calendar, Brain, Rocket, Target, Award } from 'lucide-react';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('profile');
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
+
+  useEffect(() => {
+    // Check if profile is complete
+    const userProfile = localStorage.getItem('userProfile');
+    if (userProfile) {
+      try {
+        const profile = JSON.parse(userProfile);
+        const isComplete = profile.fullName && profile.jobTitle && profile.company && profile.industry && profile.goals && profile.bio;
+        setIsProfileComplete(isComplete);
+        if (isComplete) {
+          setActiveTab('content');
+        }
+      } catch (error) {
+        console.error('Error parsing user profile:', error);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/30 transition-all duration-300">
@@ -40,7 +56,7 @@ const Index = () => {
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">AI-Powered • Professional • Efficient</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">AI-Enhanced • Professional • Results-Driven</span>
               </div>
             </div>
           </div>
@@ -51,7 +67,7 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl h-full">
                 <Brain className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">AI-Powered</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">AI-Enhanced</p>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">Advanced content generation with GPT technology</p>
               </div>
             </div>
@@ -86,83 +102,54 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 dark:bg-gray-800/80 shadow-2xl rounded-3xl p-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
-            <TabsTrigger 
-              value="profile" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
-            >
-              <Users className="w-5 h-5" />
-              <span className="hidden sm:inline">Profile Setup</span>
-              <span className="sm:hidden">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="ideas" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
-            >
-              <Lightbulb className="w-5 h-5" />
-              <span className="hidden sm:inline">Generate Ideas</span>
-              <span className="sm:hidden">Ideas</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="content" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
-            >
-              <FileText className="w-5 h-5" />
-              <span className="hidden sm:inline">Create Content</span>
-              <span className="sm:hidden">Create</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="schedule" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
-            >
-              <Calendar className="w-5 h-5" />
-              <span className="hidden sm:inline">Schedule Posts</span>
-              <span className="sm:hidden">Schedule</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="settings" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-gray-700 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
-            >
-              <SettingsIcon className="w-5 h-5" />
-              <span className="hidden sm:inline">Settings</span>
-              <span className="sm:hidden">Settings</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid grid-cols-3 bg-white/80 dark:bg-gray-800/80 shadow-2xl rounded-3xl p-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 w-full max-w-2xl">
+              {!isProfileComplete && (
+                <TabsTrigger 
+                  value="profile" 
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="hidden sm:inline">Profile Setup</span>
+                  <span className="sm:hidden">Profile</span>
+                </TabsTrigger>
+              )}
+              <TabsTrigger 
+                value="content" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
+              >
+                <FileText className="w-5 h-5" />
+                <span className="hidden sm:inline">Create & Generate</span>
+                <span className="sm:hidden">Create</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="schedule" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white transition-all rounded-2xl py-4 font-medium"
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="hidden sm:inline">Schedule Posts</span>
+                <span className="sm:hidden">Schedule</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="relative">
+          <div className="relative flex justify-center">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5 rounded-3xl blur-3xl"></div>
-            <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-200/50 dark:border-gray-700/50">
-              <TabsContent value="profile" className="mt-0">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Users className="w-6 h-6 text-white" />
+            <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 w-full max-w-6xl">
+              {!isProfileComplete && (
+                <TabsContent value="profile" className="mt-0">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Complete Your Profile</h2>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">Tell us about yourself for personalized content</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Setup Your Profile</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Tell us about yourself for personalized content</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />
-                  </div>
-                </div>
-                <UserProfile />
-              </TabsContent>
-
-              <TabsContent value="ideas" className="mt-0">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Lightbulb className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Generate Ideas</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">AI-powered inspiration for your next viral post</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Brain className="w-8 h-8 text-purple-500 animate-pulse" />
-                  </div>
-                </div>
-                <IdeaGeneration />
-              </TabsContent>
+                  <UserProfile />
+                </TabsContent>
+              )}
 
               <TabsContent value="content" className="mt-0">
                 <div className="flex items-center gap-4 mb-8">
@@ -170,11 +157,8 @@ const Index = () => {
                     <FileText className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Content</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Professional posts that drive engagement</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Rocket className="w-8 h-8 text-orange-500 animate-pulse" />
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Content & Generate Ideas</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">AI-powered content creation and inspiration</p>
                   </div>
                 </div>
                 <ContentCreation />
@@ -189,27 +173,8 @@ const Index = () => {
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Schedule Posts</h2>
                     <p className="text-gray-600 dark:text-gray-400 mt-1">Optimal timing for maximum reach</p>
                   </div>
-                  <div className="ml-auto">
-                    <TrendingUp className="w-8 h-8 text-green-500 animate-pulse" />
-                  </div>
                 </div>
                 <LinkedInScheduler />
-              </TabsContent>
-
-              <TabsContent value="settings" className="mt-0">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-gradient-to-r from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center shadow-lg">
-                    <SettingsIcon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Customize your experience</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Zap className="w-8 h-8 text-gray-500 animate-pulse" />
-                  </div>
-                </div>
-                <Settings />
               </TabsContent>
             </div>
           </div>
