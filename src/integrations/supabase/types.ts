@@ -33,6 +33,108 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          platform: string | null
+          scheduled_date: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          platform?: string | null
+          scheduled_date: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          platform?: string | null
+          scheduled_date?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      suggestions: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          suggestion: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          suggestion: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          suggestion?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          bio: string | null
+          company: string | null
+          created_at: string
+          experience_level: string | null
+          full_name: string | null
+          goals: string | null
+          id: string
+          industry: string | null
+          is_complete: boolean | null
+          job_title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          goals?: string | null
+          id?: string
+          industry?: string | null
+          is_complete?: boolean | null
+          job_title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          experience_level?: string | null
+          full_name?: string | null
+          goals?: string | null
+          id?: string
+          industry?: string | null
+          is_complete?: boolean | null
+          job_title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

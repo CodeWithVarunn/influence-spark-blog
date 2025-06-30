@@ -1,80 +1,73 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, BarChart3, User, Eye } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Calendar as CalendarIcon, Clock, Send, Settings, CheckCircle2, Eye, X } from 'lucide-react';
 
 interface ScheduledPost {
   id: string;
-  title: string;
   content: string;
-  scheduledDate: Date;
+  scheduled_date: string;
   status: 'scheduled' | 'posted' | 'failed';
-  engagementStats?: {
-    likes: number;
-    comments: number;
-    shares: number;
-    views: number;
-  };
+  created_at: string;
 }
 
 export const LinkedInScheduler = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [linkedInConnected, setLinkedInConnected] = useState(
     localStorage.getItem('linkedinConnected') === 'true'
   );
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState('09:00');
-  const [linkedInProfile, setLinkedInProfile] = useState('');
+  const [linkedInProfile, setLinkedInProfile] = useState(
+    localStorage.getItem('linkedinProfile') || ''
+  );
   const [showProfileInput, setShowProfileInput] = useState(false);
   const [previewContent, setPreviewContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
-  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([
-    {
-      id: '1',
-      title: 'Building Personal Brand Authority in Your Industry',
-      content: 'Excited to share my thoughts on building a strong personal brand in today\'s competitive market. Here are 5 key strategies that have worked for me...',
-      scheduledDate: new Date(2024, 0, 20, 9, 0),
-      status: 'posted',
-      engagementStats: {
-        likes: 45,
-        comments: 12,
-        shares: 8,
-        views: 234
-      }
-    },
-    {
-      id: '2',
-      title: 'The Future of Remote Work: 5 Trends Every Leader Should Know',
-      content: 'Remote work is here to stay. As leaders, we need to adapt and evolve. Here are the top 5 trends I\'m seeing in remote work culture...',
-      scheduledDate: new Date(2024, 0, 22, 14, 30),
-      status: 'scheduled'
-    }
-  ]);
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
+  const [pendingContent, setPendingContent] = useState('');
 
-  const approvedContent = [
-    {
-      id: '1',
-      title: 'Data-Driven Decision Making: Tools and Techniques',
-      content: 'In today\'s business landscape, data-driven decision making isn\'t just an advantage—it\'s essential. Here\'s how to leverage analytics effectively...',
-      wordCount: 1100,
-      estimatedReadTime: '6 min'
-    },
-    {
-      id: '2',
-      title: 'Networking in the Digital Age: LinkedIn Best Practices',
-      content: 'Professional networking has evolved dramatically. Here are proven strategies to build meaningful connections on LinkedIn...',
-      wordCount: 950,
-      estimatedReadTime: '5 min'
+  useEffect(() => {
+    // Check for pending content to schedule
+    const pending = localStorage.getItem('pendingSchedule');
+    if (pending) {
+      setPendingContent(pending);
+      localStorage.removeItem('pendingSchedule');
     }
-  ];
+    
+    loadScheduledPosts();
+  }, [user]);
+
+  const loadScheduledPosts = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('scheduled_posts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('scheduled_date', { ascending: false });
+      
+      if (error) {
+        console.error('Error loading scheduled posts:', error);
+        return;
+      }
+      
+      setScheduledPosts(data || []);
+    } catch (error) {
+      console.error('Error loading scheduled posts:', error);
+    }
+  };
 
   const connectLinkedIn = () => {
     if (!linkedInProfile.trim()) {
@@ -94,7 +87,9 @@ export const LinkedInScheduler = () => {
     }, 1000);
   };
 
-  const schedulePost = (content: any) => {
+  const schedulePost = async (content: string) => {
+    if (!user) return;
+    
     if (!selectedDate || !selectedTime) {
       toast({
         title: "Missing information",
@@ -104,24 +99,62 @@ export const LinkedInScheduler = () => {
       return;
     }
 
+    // Check if trying to schedule for today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate.getTime() === today.getTime()) {
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const now = new Date();
+      const selectedDateTime = new Date();
+      selectedDateTime.setHours(hours, minutes, 0, 0);
+      
+      if (selectedDateTime <= now) {
+        toast({
+          title: "Invalid time",
+          description: "Please select a future time for today's posts",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const scheduledDateTime = new Date(selectedDate);
     scheduledDateTime.setHours(hours, minutes);
 
-    const newPost: ScheduledPost = {
-      id: Date.now().toString(),
-      title: content.title,
-      content: content.content,
-      scheduledDate: scheduledDateTime,
-      status: 'scheduled'
-    };
+    try {
+      const { error } = await supabase
+        .from('scheduled_posts')
+        .insert({
+          user_id: user.id,
+          content: content,
+          scheduled_date: scheduledDateTime.toISOString(),
+          status: 'scheduled',
+          platform: 'linkedin'
+        });
 
-    setScheduledPosts(prev => [...prev, newPost]);
-    
-    toast({
-      title: "Post scheduled successfully!",
-      description: `"${content.title}" will be posted on ${scheduledDateTime.toLocaleDateString()} at ${selectedTime}`,
-    });
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Post scheduled successfully!",
+        description: `Post will be published on ${scheduledDateTime.toLocaleDateString()} at ${selectedTime}`,
+      });
+
+      // Reload posts and clear pending content
+      await loadScheduledPosts();
+      setPendingContent('');
+    } catch (error) {
+      console.error('Error scheduling post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule post. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusColor = (status: ScheduledPost['status']) => {
@@ -133,13 +166,13 @@ export const LinkedInScheduler = () => {
     }
   };
 
-  const previewPost = (content: any) => {
-    setPreviewContent(content.content);
+  const previewPost = (content: string) => {
+    setPreviewContent(content);
     setShowPreview(true);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 p-6">
       {!linkedInConnected ? (
         <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
           <CardHeader>
@@ -164,16 +197,14 @@ export const LinkedInScheduler = () => {
               {showProfileInput && (
                 <div className="mb-4 max-w-md mx-auto">
                   <Label htmlFor="linkedin-profile" className="text-left block mb-2">LinkedIn Profile/Email</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="linkedin-profile"
-                      type="text"
-                      placeholder="your-email@example.com or profile-url"
-                      value={linkedInProfile}
-                      onChange={(e) => setLinkedInProfile(e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
+                  <Input
+                    id="linkedin-profile"
+                    type="text"
+                    placeholder="your-email@example.com or profile-url"
+                    value={linkedInProfile}
+                    onChange={(e) => setLinkedInProfile(e.target.value)}
+                    className="mb-2"
+                  />
                 </div>
               )}
               
@@ -181,7 +212,6 @@ export const LinkedInScheduler = () => {
                 onClick={connectLinkedIn}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
               >
-                <User className="w-4 h-4 mr-2" />
                 {showProfileInput ? 'Connect Account' : 'Connect LinkedIn Account'}
               </Button>
             </div>
@@ -190,56 +220,55 @@ export const LinkedInScheduler = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Scheduling Interface */}
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Pending Content */}
+            {pendingContent && (
+              <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <Send className="w-5 h-5 text-green-600" />
+                    Ready to Schedule
+                  </CardTitle>
+                  <CardDescription>
+                    Content generated and ready for scheduling
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                      {pendingContent.substring(0, 150)}...
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => previewPost(pendingContent)}
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Preview
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setPendingContent('')}
+                      variant="outline"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Clear
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <CalendarIcon className="w-5 h-5 text-green-600" />
-                  Schedule New Post
+                  Schedule Post
                 </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Select approved content and set publishing schedule
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label>Select Content to Schedule</Label>
-                  <div className="space-y-2 mt-2">
-                    {approvedContent.map(content => (
-                      <div
-                        key={content.id}
-                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm text-gray-900 dark:text-white">{content.title}</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {content.wordCount} words • {content.estimatedReadTime} read
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => previewPost(content)}
-                            className="text-purple-600 hover:text-purple-700 border-purple-200 hover:bg-purple-50"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Preview
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => schedulePost(content)}
-                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                          >
-                            <Clock className="w-4 h-4 mr-2" />
-                            Schedule
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="schedule-time">Time</Label>
@@ -252,6 +281,17 @@ export const LinkedInScheduler = () => {
                     />
                   </div>
                 </div>
+
+                {pendingContent && (
+                  <Button
+                    onClick={() => schedulePost(pendingContent)}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                    disabled={!selectedDate || !selectedTime}
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Schedule This Post
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -264,7 +304,7 @@ export const LinkedInScheduler = () => {
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                   className="rounded-md border dark:border-gray-600"
                 />
               </CardContent>
@@ -279,77 +319,60 @@ export const LinkedInScheduler = () => {
                 Scheduled Posts
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-300">
-                Manage your upcoming and past LinkedIn posts
+                Manage your upcoming LinkedIn posts
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {scheduledPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm mb-1 text-gray-900 dark:text-white">{post.title}</h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {post.scheduledDate.toLocaleDateString()} at{' '}
-                          {post.scheduledDate.toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                      <Badge className={getStatusColor(post.status)}>
-                        {post.status}
-                      </Badge>
-                    </div>
-
-                    {post.engagementStats && (
-                      <div className="bg-white dark:bg-gray-800 rounded-md p-3">
-                        <div className="flex items-center gap-1 mb-2">
-                          <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Engagement Stats
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2 text-center">
-                          <div>
-                            <div className="text-lg font-semibold text-blue-600">
-                              {post.engagementStats.views}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Views</div>
-                          </div>
-                          <div>
-                            <div className="text-lg font-semibold text-red-600">
-                              {post.engagementStats.likes}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Likes</div>
-                          </div>
-                          <div>
-                            <div className="text-lg font-semibold text-green-600">
-                              {post.engagementStats.comments}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Comments</div>
-                          </div>
-                          <div>
-                            <div className="text-lg font-semibold text-purple-600">
-                              {post.engagementStats.shares}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Shares</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {post.status === 'posted' && (
-                      <div className="flex items-center gap-2 mt-2 text-green-600 dark:text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span className="text-sm">Successfully posted to LinkedIn</span>
-                      </div>
-                    )}
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {scheduledPosts.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <Send className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No scheduled posts yet</p>
                   </div>
-                ))}
+                ) : (
+                  scheduledPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            {new Date(post.scheduled_date).toLocaleDateString()} at{' '}
+                            {new Date(post.scheduled_date).toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                          <p className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2">
+                            {post.content.substring(0, 100)}...
+                          </p>
+                        </div>
+                        <Badge className={getStatusColor(post.status)}>
+                          {post.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => previewPost(post.content)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
+
+                      {post.status === 'posted' && (
+                        <div className="flex items-center gap-2 mt-2 text-green-600 dark:text-green-400">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span className="text-sm">Successfully posted to LinkedIn</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -358,14 +381,32 @@ export const LinkedInScheduler = () => {
 
       {/* Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Content Preview</DialogTitle>
+            <DialogTitle>Post Preview</DialogTitle>
           </DialogHeader>
-          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+          <div className="mt-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-blue-500">
+            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">
               {previewContent}
             </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowPreview(false)}>
+              Close
+            </Button>
+            {pendingContent === previewContent && (
+              <Button 
+                onClick={() => {
+                  setShowPreview(false);
+                  schedulePost(previewContent);
+                }}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={!selectedDate || !selectedTime}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Schedule Now
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

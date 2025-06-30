@@ -32,10 +32,10 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Features</h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Profile Setup</a></li>
-              <li><a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Generate Ideas</a></li>
-              <li><a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Create Content</a></li>
-              <li><a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Schedule Posts</a></li>
+              <li><span className="cursor-default">Profile Setup</span></li>
+              <li><span className="cursor-default">Generate Ideas</span></li>
+              <li><span className="cursor-default">Create Content</span></li>
+              <li><span className="cursor-default">Schedule Posts</span></li>
             </ul>
           </div>
 
@@ -61,9 +61,9 @@ export const Footer = () => {
               © 2025 LinkedUp Content. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-              <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Support</a>
+              <span className="cursor-default">Privacy Policy</span>
+              <span className="cursor-default">Terms of Service</span>
+              <span className="cursor-default">Support</span>
             </div>
           </div>
         </div>

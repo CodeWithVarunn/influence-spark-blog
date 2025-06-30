@@ -68,18 +68,18 @@ export const ChatBot = () => {
     <>
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 z-50 border-2 border-white/20"
+        className="fixed bottom-24 right-6 h-12 w-12 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 z-50 border-2 border-white/20"
       >
-        <MessageCircle className="h-6 w-6 text-white" />
+        <MessageCircle className="h-5 w-5 text-white" />
       </Button>
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl h-[600px] flex flex-col border-0 shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl">
+          <Card className="w-full max-w-2xl h-[500px] flex flex-col border-0 shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl">
             <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3">
-                  <MessageCircle className="h-6 w-6" />
+                  <MessageCircle className="h-5 w-5" />
                   AI Content Assistant
                 </CardTitle>
                 <div className="flex items-center gap-2">
@@ -100,17 +100,17 @@ export const ChatBot = () => {
                     onClick={() => setIsOpen(false)}
                     className="text-white hover:bg-white/20 rounded-lg"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col p-0">
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
                   <div className="text-center py-8">
-                    <MessageCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                    <MessageCircle className="h-10 w-10 text-blue-500 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       LinkedIn Content Assistant
                     </h3>
@@ -125,13 +125,13 @@ export const ChatBot = () => {
                       className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[80%] p-4 rounded-2xl ${
+                        className={`max-w-[80%] p-3 rounded-2xl ${
                           message.isUser
                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
                         } shadow-lg`}
                       >
-                        <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                        <p className="whitespace-pre-wrap leading-relaxed text-sm">{message.text}</p>
                         <span className="text-xs opacity-70 mt-2 block">
                           {message.timestamp.toLocaleTimeString()}
                         </span>
@@ -142,30 +142,31 @@ export const ChatBot = () => {
                 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-2xl shadow-lg">
+                    <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl shadow-lg">
                       <div className="flex items-center gap-2">
                         <RotateCcw className="h-4 w-4 animate-spin text-blue-600" />
-                        <span className="text-gray-600 dark:text-gray-400">Thinking...</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">Thinking...</span>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-                <div className="flex gap-3">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-3">
+                <div className="flex gap-2">
                   <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask me about LinkedIn content strategies..."
-                    className="flex-1 min-h-[50px] max-h-[120px] resize-none rounded-xl border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 min-h-[40px] max-h-[80px] resize-none rounded-xl border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 text-sm"
                     disabled={isLoading}
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={!input.trim() || isLoading}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl px-6 shadow-lg"
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl px-4 shadow-lg"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

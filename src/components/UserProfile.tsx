@@ -6,72 +6,65 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Briefcase, Target, Plus, Check, Star, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { User, Briefcase, Target, Check, Star, Sparkles } from 'lucide-react';
 
 export const UserProfile = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [profileData, setProfileData] = useState({
     fullName: '',
     jobTitle: '',
     company: '',
-    location: '',
-    experience: '',
     industry: '',
+    experienceLevel: '',
     goals: '',
-    interests: [],
     bio: '',
-    linkedinUrl: ''
   });
-  const [customInterest, setCustomInterest] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load existing profile data
-    const savedProfile = localStorage.getItem('userProfile');
-    if (savedProfile) {
-      try {
-        const profile = JSON.parse(savedProfile);
-        setProfileData(profile);
-        
-        // Check if profile is complete
-        const isProfileComplete = profile.fullName && profile.jobTitle && profile.company && profile.industry && profile.goals && profile.bio;
-        setIsComplete(isProfileComplete);
-      } catch (error) {
+    loadProfile();
+  }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
+        return;
       }
-    }
-  }, []);
-
-  const predefinedInterests = [
-    'Leadership', 'Technology', 'Marketing', 'Sales', 'Entrepreneurship',
-    'Personal Branding', 'Networking', 'Career Development', 'Innovation',
-    'Digital Marketing', 'Data Analytics', 'AI & Machine Learning', 'Startups',
-    'Business Strategy', 'Content Creation', 'Remote Work', 'Productivity'
-  ];
-
-  const handleInterestToggle = (interest: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
-    }));
-  };
-
-  const addCustomInterest = () => {
-    if (customInterest.trim() && !profileData.interests.includes(customInterest.trim())) {
-      setProfileData(prev => ({
-        ...prev,
-        interests: [...prev.interests, customInterest.trim()]
-      }));
-      setCustomInterest('');
+      
+      if (data) {
+        setProfileData({
+          fullName: data.full_name || '',
+          jobTitle: data.job_title || '',
+          company: data.company || '',
+          industry: data.industry || '',
+          experienceLevel: data.experience_level || '',
+          goals: data.goals || '',
+          bio: data.bio || '',
+        });
+        setIsComplete(data.is_complete || false);
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
     }
   };
 
-  const handleSave = () => {
-    // Check if all required fields are filled
+  const handleSave = async () => {
+    if (!user) return;
+
     const requiredFields = [
       profileData.fullName,
       profileData.jobTitle,
@@ -92,17 +85,47 @@ export const UserProfile = () => {
       return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('userProfile', JSON.stringify(profileData));
-    setIsComplete(true);
+    setLoading(true);
     
-    toast({
-      title: "Profile Completed!",
-      description: "Your profile has been saved. We'll use this to personalize your content.",
-    });
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          full_name: profileData.fullName,
+          job_title: profileData.jobTitle,
+          company: profileData.company,
+          industry: profileData.industry,
+          experience_level: profileData.experienceLevel,
+          goals: profileData.goals,
+          bio: profileData.bio,
+          is_complete: true,
+          updated_at: new Date().toISOString(),
+        });
 
-    // Trigger a refresh of the parent component
-    window.dispatchEvent(new CustomEvent('profileCompleted'));
+      if (error) {
+        throw error;
+      }
+
+      setIsComplete(true);
+      
+      toast({
+        title: "Profile Completed!",
+        description: "Your profile has been saved successfully.",
+      });
+
+      // Trigger a refresh of the parent component
+      window.dispatchEvent(new CustomEvent('profileCompleted'));
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save profile. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const completionPercentage = () => {
@@ -118,7 +141,7 @@ export const UserProfile = () => {
     return Math.round((completed / fields.length) * 100);
   };
 
-  if (isComplete) {
+  if (isComplete && window.location.pathname !== '/profile') {
     return (
       <div className="text-center py-16">
         <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -137,9 +160,9 @@ export const UserProfile = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto p-6">
       {/* Progress Card */}
-      <Card className="border-0 shadow-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 backdrop-blur-sm">
+      <Card className="border-0 shadow-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -167,8 +190,8 @@ export const UserProfile = () => {
         </CardHeader>
       </Card>
 
-      {/* Personal Information */}
-      <Card className="border-0 shadow-xl bg-white dark:bg-gray-800 backdrop-blur-sm">
+      {/* Form */}
+      <Card className="border-0 shadow-xl bg-white dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white text-xl">
             <User className="w-6 h-6 text-blue-600" />
@@ -189,30 +212,6 @@ export const UserProfile = () => {
               />
             </div>
             <div>
-              <Label htmlFor="location" className="text-base font-medium">Location</Label>
-              <Input
-                id="location"
-                value={profileData.location}
-                onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="City, Country"
-                className="mt-2 h-12 rounded-xl border-2 focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Professional Information */}
-      <Card className="border-0 shadow-xl bg-white dark:bg-gray-800 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white text-xl">
-            <Briefcase className="w-6 h-6 text-green-600" />
-            Professional Background
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
               <Label htmlFor="jobTitle" className="text-base font-medium">Current Role *</Label>
               <Input
                 id="jobTitle"
@@ -223,6 +222,9 @@ export const UserProfile = () => {
                 required
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="company" className="text-base font-medium">Company/Institution *</Label>
               <Input
@@ -233,23 +235,6 @@ export const UserProfile = () => {
                 className="mt-2 h-12 rounded-xl border-2 focus:border-blue-500"
                 required
               />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="experience" className="text-base font-medium">Experience Level</Label>
-              <Select onValueChange={(value) => setProfileData(prev => ({ ...prev, experience: value }))}>
-                <SelectTrigger className="mt-2 h-12 rounded-xl border-2">
-                  <SelectValue placeholder="Select your experience level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
-                  <SelectItem value="mid">Mid Level (3-5 years)</SelectItem>
-                  <SelectItem value="senior">Senior Level (6-10 years)</SelectItem>
-                  <SelectItem value="executive">Executive (10+ years)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label htmlFor="industry" className="text-base font-medium">Industry *</Label>
@@ -271,52 +256,21 @@ export const UserProfile = () => {
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Interests & Goals */}
-      <Card className="border-0 shadow-xl bg-white dark:bg-gray-800 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-white text-xl">
-            <Target className="w-6 h-6 text-purple-600" />
-            Interests & Goals
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
           <div>
-            <Label className="text-base font-medium">Professional Interests</Label>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Select topics you're passionate about or want to create content around
-            </p>
-            <div className="flex flex-wrap gap-3 mb-4">
-              {predefinedInterests.map((interest) => (
-                <Badge
-                  key={interest}
-                  variant={profileData.interests.includes(interest) ? "default" : "outline"}
-                  className={`cursor-pointer transition-all rounded-xl px-4 py-2 ${
-                    profileData.interests.includes(interest)
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2'
-                  }`}
-                  onClick={() => handleInterestToggle(interest)}
-                >
-                  {profileData.interests.includes(interest) && <Check className="w-3 h-3 mr-1" />}
-                  {interest}
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <Input
-                value={customInterest}
-                onChange={(e) => setCustomInterest(e.target.value)}
-                placeholder="Add custom interest"
-                className="flex-1 h-12 rounded-xl border-2"
-                onKeyPress={(e) => e.key === 'Enter' && addCustomInterest()}
-              />
-              <Button onClick={addCustomInterest} variant="outline" className="h-12 px-6 rounded-xl">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+            <Label htmlFor="experienceLevel" className="text-base font-medium">Experience Level</Label>
+            <Select onValueChange={(value) => setProfileData(prev => ({ ...prev, experienceLevel: value }))}>
+              <SelectTrigger className="mt-2 h-12 rounded-xl border-2">
+                <SelectValue placeholder="Select your experience level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
+                <SelectItem value="mid">Mid Level (3-5 years)</SelectItem>
+                <SelectItem value="senior">Senior Level (6-10 years)</SelectItem>
+                <SelectItem value="executive">Executive (10+ years)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -351,11 +305,12 @@ export const UserProfile = () => {
       <div className="flex justify-center pt-8">
         <Button 
           onClick={handleSave}
+          disabled={loading}
           size="lg"
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-4 text-lg font-semibold shadow-2xl hover:shadow-blue-500/25 transition-all transform hover:scale-105 rounded-2xl"
         >
           <Check className="w-6 h-6 mr-3" />
-          Complete Profile Setup
+          {loading ? 'Saving...' : 'Complete Profile Setup'}
         </Button>
       </div>
     </div>

@@ -1,87 +1,92 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Settings as SettingsIcon, Bell, Shield, Palette, Save, Trash2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Bell, 
+  Shield, 
+  Palette,
+  Globe,
+  Download,
+  Trash2,
+  User,
+  LogOut
+} from 'lucide-react';
 
 export const Settings = () => {
   const { toast } = useToast();
-  const { isDark, toggleTheme } = useTheme();
+  const { signOut, user } = useAuth();
   const [settings, setSettings] = useState({
-    linkedinStayConnected: true,
-    notifications: {
-      email: true,
-      push: false,
-      contentReady: true,
-      scheduledPosts: true
-    },
-    privacy: {
-      profileVisible: true,
-      analyticsSharing: false
-    },
-    preferences: {
-      autoSave: true,
-      defaultTone: 'professional',
-      contentLength: 'medium'
-    }
+    notifications: true,
+    emailUpdates: false,
+    darkMode: false,
+    autoSchedule: true,
+    dataExport: false
   });
 
-  const handleSave = () => {
-    localStorage.setItem('appSettings', JSON.stringify(settings));
+  const handleSettingChange = (key: string, value: boolean) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
     toast({
-      title: "Settings Saved!",
-      description: "Your preferences have been updated successfully.",
+      title: "Settings updated",
+      description: `${key} has been ${value ? 'enabled' : 'disabled'}`,
     });
   };
 
-  const handleDeleteAccount = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+  const handleSignOut = async () => {
+    try {
+      await signOut();
       toast({
-        title: "Account Deletion",
-        description: "Please contact support to complete account deletion.",
-        variant: "destructive"
+        title: "Signed out successfully",
+        description: "You have been logged out of your account",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-gradient-to-r from-gray-600 to-gray-800 rounded-xl flex items-center justify-center">
-          <SettingsIcon className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-          <p className="text-gray-600 dark:text-gray-400">Customize your LinkedUp Content experience</p>
-        </div>
-      </div>
+  const exportData = () => {
+    toast({
+      title: "Export started",
+      description: "Your data export will be ready shortly",
+    });
+  };
 
-      {/* LinkedIn Connection */}
+  const deleteAccount = () => {
+    toast({
+      title: "Account deletion",
+      description: "Please contact support to delete your account",
+      variant: "destructive",
+    });
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* User Info */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-600" />
-            LinkedIn Connection
+          <CardTitle className="flex items-center gap-3">
+            <User className="w-6 h-6 text-blue-600" />
+            Account Information
           </CardTitle>
-          <CardDescription>
-            Manage your LinkedIn connection settings
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="space-y-4">
             <div>
-              <h3 className="font-medium">Stay Connected to LinkedIn</h3>
-              <p className="text-sm text-gray-500">Keep your LinkedIn connection active for seamless posting</p>
+              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</Label>
+              <p className="text-lg font-medium">{user?.email}</p>
             </div>
-            <Switch
-              checked={settings.linkedinStayConnected}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, linkedinStayConnected: checked }))
-              }
-            />
+            <div>
+              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Account Status</Label>
+              <p className="text-green-600 font-medium">Active</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -89,85 +94,56 @@ export const Settings = () => {
       {/* Notifications */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-green-600" />
+          <CardTitle className="flex items-center gap-3">
+            <Bell className="w-6 h-6 text-green-600" />
             Notifications
           </CardTitle>
-          <CardDescription>
-            Choose how you want to be notified
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium">Email Notifications</h3>
-              <p className="text-sm text-gray-500">Receive updates via email</p>
+              <Label htmlFor="notifications" className="text-base font-medium">Push Notifications</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Receive notifications about scheduled posts</p>
             </div>
             <Switch
-              checked={settings.notifications.email}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ 
-                  ...prev, 
-                  notifications: { ...prev.notifications, email: checked }
-                }))
-              }
+              id="notifications"
+              checked={settings.notifications}
+              onCheckedChange={(checked) => handleSettingChange('notifications', checked)}
             />
           </div>
           
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium">Content Ready Alerts</h3>
-              <p className="text-sm text-gray-500">Get notified when content is generated</p>
+              <Label htmlFor="email-updates" className="text-base font-medium">Email Updates</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Get weekly content performance reports</p>
             </div>
             <Switch
-              checked={settings.notifications.contentReady}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ 
-                  ...prev, 
-                  notifications: { ...prev.notifications, contentReady: checked }
-                }))
-              }
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Scheduled Post Alerts</h3>
-              <p className="text-sm text-gray-500">Reminders for scheduled posts</p>
-            </div>
-            <Switch
-              checked={settings.notifications.scheduledPosts}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ 
-                  ...prev, 
-                  notifications: { ...prev.notifications, scheduledPosts: checked }
-                }))
-              }
+              id="email-updates"
+              checked={settings.emailUpdates}
+              onCheckedChange={(checked) => handleSettingChange('emailUpdates', checked)}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Appearance */}
+      {/* Preferences */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-purple-600" />
-            Appearance
+          <CardTitle className="flex items-center gap-3">
+            <Palette className="w-6 h-6 text-purple-600" />
+            Preferences
           </CardTitle>
-          <CardDescription>
-            Customize how the app looks and feels
-          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium">Dark Mode</h3>
-              <p className="text-sm text-gray-500">Toggle between light and dark themes</p>
+              <Label htmlFor="auto-schedule" className="text-base font-medium">Auto-Schedule Posts</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Automatically schedule posts at optimal times</p>
             </div>
             <Switch
-              checked={isDark}
-              onCheckedChange={toggleTheme}
+              id="auto-schedule"
+              checked={settings.autoSchedule}
+              onCheckedChange={(checked) => handleSettingChange('autoSchedule', checked)}
             />
           </div>
         </CardContent>
@@ -176,85 +152,46 @@ export const Settings = () => {
       {/* Privacy & Security */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-red-600" />
+          <CardTitle className="flex items-center gap-3">
+            <Shield className="w-6 h-6 text-red-600" />
             Privacy & Security
           </CardTitle>
-          <CardDescription>
-            Control your privacy and data settings
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Profile Visibility</h3>
-              <p className="text-sm text-gray-500">Make your profile visible to other users</p>
-            </div>
-            <Switch
-              checked={settings.privacy.profileVisible}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ 
-                  ...prev, 
-                  privacy: { ...prev.privacy, profileVisible: checked }
-                }))
-              }
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Auto-Save Drafts</h3>
-              <p className="text-sm text-gray-500">Automatically save your work</p>
-            </div>
-            <Switch
-              checked={settings.preferences.autoSave}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ 
-                  ...prev, 
-                  preferences: { ...prev.preferences, autoSave: checked }
-                }))
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-0 shadow-lg border-red-200 dark:border-red-800">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <Trash2 className="w-5 h-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription>
-            Irreversible and destructive actions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            variant="destructive" 
-            onClick={handleDeleteAccount}
-            className="w-full"
+          <Button
+            onClick={exportData}
+            variant="outline"
+            className="w-full justify-start"
           >
+            <Download className="w-4 h-4 mr-2" />
+            Export My Data
+          </Button>
+          
+          <Button
+            onClick={deleteAccount}
+            variant="destructive"
+            className="w-full justify-start"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
             Delete Account
           </Button>
-          <p className="text-sm text-gray-500 mt-2 text-center">
-            This action cannot be undone. All your data will be permanently deleted.
-          </p>
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <div className="flex justify-center pt-6">
-        <Button 
-          onClick={handleSave}
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 shadow-lg"
-        >
-          <Save className="w-5 h-5 mr-2" />
-          Save All Settings
-        </Button>
-      </div>
+      {/* Sign Out */}
+      <Card className="border-0 shadow-lg">
+        <CardContent className="pt-6">
+          <Button
+            onClick={handleSignOut}
+            variant="outline"
+            size="lg"
+            className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Sign Out
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
