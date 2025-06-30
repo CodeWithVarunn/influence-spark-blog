@@ -11,6 +11,11 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SchedulePosts from "./pages/SchedulePosts";
 import NotFound from "./pages/NotFound";
+const ProtectedRoute = () => {
+  // component logic
+};
+
+export default ProtectedRoute;
 
 const queryClient = new QueryClient();
 
