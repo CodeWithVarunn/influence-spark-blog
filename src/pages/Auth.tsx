@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, EyeOff, Mail, Lock, User as UserIcon, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User as UserIcon, Brain } from 'lucide-react';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -82,14 +82,17 @@ export default function Auth() {
     }
   };
 
+  const handleRememberMeChange = (checked: boolean) => {
+    setRememberMe(checked);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo and Title */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
-              <Sparkles className="w-6 h-6 text-white" />
+              <Brain className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-indigo-600 dark:from-white dark:via-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               LinkedUp Content
@@ -178,7 +181,7 @@ export default function Auth() {
                     <Checkbox 
                       id="remember" 
                       checked={rememberMe}
-                      onCheckedChange={setRememberMe}
+                      onCheckedChange={handleRememberMeChange}
                     />
                     <Label htmlFor="remember" className="text-sm text-gray-600 dark:text-gray-300">
                       Remember me
@@ -204,7 +207,6 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* Toggle between login/signup */}
         <div className="text-center mt-6">
           <p className="text-gray-600 dark:text-gray-300">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
@@ -217,19 +219,33 @@ export default function Auth() {
           </p>
         </div>
 
-        {/* Features Preview */}
-        <div className="mt-8 grid grid-cols-2 gap-4 text-center">
-          <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl backdrop-blur-sm">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="mt-8 text-center">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl backdrop-blur-sm">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">AI-Powered</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Advanced content generation with GPT technology</p>
             </div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Content Creation</p>
-          </div>
-          <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl backdrop-blur-sm">
-            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <UserIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl backdrop-blur-sm">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Lightning Fast</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Generate professional content in seconds</p>
             </div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Smart Scheduling</p>
+            <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl backdrop-blur-sm">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">High Engagement</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Optimize posts for maximum reach and impact</p>
+            </div>
           </div>
         </div>
       </div>

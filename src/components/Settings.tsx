@@ -10,7 +10,6 @@ import {
   Bell, 
   Shield, 
   Palette,
-  Globe,
   Download,
   Trash2,
   User,
@@ -23,9 +22,7 @@ export const Settings = () => {
   const [settings, setSettings] = useState({
     notifications: true,
     emailUpdates: false,
-    darkMode: false,
     autoSchedule: true,
-    dataExport: false
   });
 
   const handleSettingChange = (key: string, value: boolean) => {
@@ -68,7 +65,7 @@ export const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-6">
       {/* User Info */}
       <Card className="border-0 shadow-lg">
         <CardHeader>

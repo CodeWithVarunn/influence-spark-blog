@@ -18,6 +18,8 @@ interface ScheduledPost {
   scheduled_date: string;
   status: 'scheduled' | 'posted' | 'failed';
   created_at: string;
+  user_id: string;
+  platform: string;
 }
 
 export const LinkedInScheduler = () => {
@@ -38,7 +40,6 @@ export const LinkedInScheduler = () => {
   const [pendingContent, setPendingContent] = useState('');
 
   useEffect(() => {
-    // Check for pending content to schedule
     const pending = localStorage.getItem('pendingSchedule');
     if (pending) {
       setPendingContent(pending);
@@ -63,7 +64,13 @@ export const LinkedInScheduler = () => {
         return;
       }
       
-      setScheduledPosts(data || []);
+      // Map the data to match our interface
+      const mappedData: ScheduledPost[] = (data || []).map(post => ({
+        ...post,
+        status: post.status as 'scheduled' | 'posted' | 'failed'
+      }));
+      
+      setScheduledPosts(mappedData);
     } catch (error) {
       console.error('Error loading scheduled posts:', error);
     }
@@ -99,30 +106,20 @@ export const LinkedInScheduler = () => {
       return;
     }
 
-    // Check if trying to schedule for today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    selectedDate.setHours(0, 0, 0, 0);
-    
-    if (selectedDate.getTime() === today.getTime()) {
-      const [hours, minutes] = selectedTime.split(':').map(Number);
-      const now = new Date();
-      const selectedDateTime = new Date();
-      selectedDateTime.setHours(hours, minutes, 0, 0);
-      
-      if (selectedDateTime <= now) {
-        toast({
-          title: "Invalid time",
-          description: "Please select a future time for today's posts",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const scheduledDateTime = new Date(selectedDate);
     scheduledDateTime.setHours(hours, minutes);
+
+    // Allow scheduling for today if time is in the future
+    const now = new Date();
+    if (scheduledDateTime <= now) {
+      toast({
+        title: "Invalid time",
+        description: "Please select a future date and time",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -144,7 +141,6 @@ export const LinkedInScheduler = () => {
         description: `Post will be published on ${scheduledDateTime.toLocaleDateString()} at ${selectedTime}`,
       });
 
-      // Reload posts and clear pending content
       await loadScheduledPosts();
       setPendingContent('');
     } catch (error) {
@@ -219,9 +215,7 @@ export const LinkedInScheduler = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Scheduling Interface */}
           <div className="space-y-6">
-            {/* Pending Content */}
             {pendingContent && (
               <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
                 <CardHeader>
@@ -234,9 +228,9 @@ export const LinkedInScheduler = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                      {pendingContent.substring(0, 150)}...
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4 max-h-32 overflow-y-auto">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                      {pendingContent}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -311,7 +305,6 @@ export const LinkedInScheduler = () => {
             </Card>
           </div>
 
-          {/* Scheduled Posts */}
           <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -379,13 +372,12 @@ export const LinkedInScheduler = () => {
         </div>
       )}
 
-      {/* Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Post Preview</DialogTitle>
           </DialogHeader>
-          <div className="mt-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-blue-500">
+          <div className="mt-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-blue-500 max-h-96 overflow-y-auto">
             <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">
               {previewContent}
             </div>
@@ -403,7 +395,7 @@ export const LinkedInScheduler = () => {
                 className="bg-green-600 hover:bg-green-700"
                 disabled={!selectedDate || !selectedTime}
               >
-                <Calendar className="w-4 h-4 mr-2" />
+                <CalendarIcon className="w-4 h-4 mr-2" />
                 Schedule Now
               </Button>
             )}

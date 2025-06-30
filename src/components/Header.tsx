@@ -8,11 +8,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogOut, User, Sun, Moon, Settings, Activity, Award, TrendingUp, BarChart3, Target, Trophy } from 'lucide-react';
+import { UserProfile } from './UserProfile';
+import { Settings as SettingsComponent } from './Settings';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -22,7 +25,7 @@ export const Header = () => {
     return email.substring(0, 2).toUpperCase();
   };
 
-  const UserProfile = () => (
+  const UserProfileDisplay = () => (
     <Card className="w-full max-w-md mx-auto border-0 shadow-2xl bg-gradient-to-br from-white via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       <CardHeader className="text-center pb-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
         <div className="mx-auto w-20 h-20 mb-4">
@@ -152,13 +155,25 @@ export const Header = () => {
                       <DialogHeader className="sr-only">
                         <DialogTitle>User Profile</DialogTitle>
                       </DialogHeader>
-                      <UserProfile />
+                      <UserProfileDisplay />
                     </DialogContent>
                   </Dialog>
-                  <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 p-3">
-                    <Settings className="mr-3 h-4 w-4 text-gray-600" />
-                    <span className="font-medium">Settings & Privacy</span>
-                  </DropdownMenuItem>
+                  
+                  <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                    <DialogTrigger asChild>
+                      <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 p-3" onSelect={(e) => e.preventDefault()}>
+                        <Settings className="mr-3 h-4 w-4 text-gray-600" />
+                        <span className="font-medium">Settings & Privacy</span>
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Settings & Privacy</DialogTitle>
+                      </DialogHeader>
+                      <SettingsComponent />
+                    </DialogContent>
+                  </Dialog>
+                  
                   <DropdownMenuSeparator className="my-2" />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg p-3">
                     <LogOut className="mr-3 h-4 w-4" />
